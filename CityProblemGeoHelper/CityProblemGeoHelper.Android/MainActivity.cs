@@ -1,11 +1,7 @@
-﻿using System;
-
-using Android.App;
+﻿using Android.App;
 using Android.Content.PM;
-using Android.Runtime;
-using Android.Views;
-using Android.Widget;
 using Android.OS;
+using Plugin.CurrentActivity;
 
 namespace CityProblemGeoHelper.Droid
 {
@@ -20,7 +16,17 @@ namespace CityProblemGeoHelper.Droid
             base.OnCreate(bundle);
 
             global::Xamarin.Forms.Forms.Init(this, bundle);
+            CrossCurrentActivity.Current.Init(this, bundle);
             LoadApplication(new App());
+        }
+
+        /// <summary>
+        /// Setup necessario come descritto dai vari plugin utilizzati nel progetto.
+        /// Per info: https://github.com/jamesmontemagno/MediaPlugin 
+        /// </summary>
+        public override void OnRequestPermissionsResult(int requestCode, string[] permissions, Permission[] grantResults)
+        {
+            Plugin.Permissions.PermissionsImplementation.Current.OnRequestPermissionsResult(requestCode, permissions, grantResults);
         }
     }
 }

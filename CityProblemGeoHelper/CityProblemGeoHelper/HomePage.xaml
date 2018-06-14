@@ -1,0 +1,26 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<TabbedPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="CityProblemGeoHelper.HomePage"
+             BarBackgroundColor="Purple"
+             Title="CityProblemHelper">
+    <ContentPage Title="Try this app">
+        <ScrollView>
+            <StackLayout Spacing="10" Padding="10">
+                <Button x:Name="ButtonGetPhoto" 
+                        Text="Get a Photo with the current location" 
+                        Clicked="ButtonGetPhoto_Clicked" />
+                <Label x:Name="LabelAddress" />
+                <Image x:Name="image"/>
+            </StackLayout>
+        </ScrollView>
+    </ContentPage>
+    <ContentPage Title="Help">
+        <ScrollView>
+            <StackLayout Spacing="10" Padding="10">
+                <Slider IsEnabled="False" IsVisible="True" />
+                <Label x:Name="Text" />
+            </StackLayout>
+        </ScrollView>
+    </ContentPage>
+</TabbedPage>
