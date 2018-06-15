@@ -25,8 +25,8 @@ namespace CityProblemGeoHelper
                 {
                     var title = $"{permission} Permission";
                     var question = $"To use the plugin the {permission} permission is required.";
-                    var positive = "Settings";
-                    var negative = "Maybe Later";
+                    const string positive = "Settings";
+                    const string negative = "Maybe Later";
 
                     var task = Application.Current?.MainPage?.DisplayAlert(title, question, positive, negative);
 

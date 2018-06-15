@@ -9,7 +9,6 @@ using Plugin.Geolocator.Abstractions;
 using Plugin.Geolocator;
 using System.Linq;
 
-
 namespace CityProblemGeoHelper
 {
     [XamlCompilation(XamlCompilationOptions.Compile)]
@@ -18,10 +17,9 @@ namespace CityProblemGeoHelper
         /// <summary>
         /// Permessi necessari da controllare e in caso richiedere ad ogni avvio se necessario
         /// </summary>
-        private List<Permission> _neededPermissions =
+        private readonly List<Permission> _neededPermissions =
             new List<Permission>
             {
-                Permission.Calendar,
                 Permission.Camera,
                 Permission.Location
             };
@@ -39,13 +37,18 @@ namespace CityProblemGeoHelper
         /// <summary>
         /// Tengo in memoria la posizione comprensiva di heading(direzione)
         /// </summary>
-        Position _currentPosition;
+        private Position _currentPosition;
 
         public HomePage()
         {
             InitializeComponent();
         }
 
+        /// <summary>
+        /// Click sul pulsante che permette di prendere la foto geolocalizzata
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private async void ButtonGetPhoto_Clicked(object sender, EventArgs e)
         {
             try
@@ -60,11 +63,10 @@ namespace CityProblemGeoHelper
                     }
                 }
 
-                // Inizializzo ora la fotocamera
-                await CrossMedia.Current.Initialize().ConfigureAwait(false);
-
-                // Se non esiste o non è disponibile sul device, esco.
-                if (!CrossMedia.Current.IsCameraAvailable
+                // Inizializzo ora la fotocamera e controllo che tutto sia ok
+                // Se non esiste o non è disponibile sul device la fotocamera o il gps, esco.
+                if (!await CrossMedia.Current.Initialize().ConfigureAwait(false)
+                    || !CrossMedia.Current.IsCameraAvailable
                     || !CrossMedia.Current.IsTakePhotoSupported
                     || !CrossGeolocator.IsSupported)
                 {
@@ -73,10 +75,10 @@ namespace CityProblemGeoHelper
                 }
 
                 // Disabilito mentre faccio il necessario
-                ButtonGetPhoto.IsEnabled = false;
+                // ButtonGetPhoto.IsEnabled = false;
 
                 // Provo quindi a prendere la posizione corrente
-                // sicuramente ho i permessi avendo già controllato
+                // sicuramente ho i permessi perchè ho già controllato
                 var locator = CrossGeolocator.Current;
 
                 // Chiedo di essere il più accurato possibile
@@ -136,7 +138,7 @@ namespace CityProblemGeoHelper
                 }
 
                 // Dico all'utente dove ho salvato l'immagine per chiarezza
-                await DisplayAlert("File Location", file.Path, "OK");
+                await DisplayAlert("File Location", file.Path, "OK").ConfigureAwait(false);
 
                 var stream = file.GetStream();
 
