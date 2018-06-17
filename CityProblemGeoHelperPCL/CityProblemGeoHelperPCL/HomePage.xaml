@@ -17,13 +17,13 @@
                         MaxLength="500"
                         IsVisible="False"
                         IsEnabled="False"/>
+                <Entry x:Name="EntryEmail"
+                       Placeholder="Please enter here your town hall email..."
+                        IsVisible="False"
+                        IsEnabled="False"/>
                 <Button x:Name="ButtonSendEmail" 
                         Text="Send this geolocalized photo to your town hall" 
                         Clicked="ButtonSendEmail_Clicked"                      
-                        IsVisible="False"
-                        IsEnabled="False"/>
-                <Entry x:Name="EntryEmail"
-                       Placeholder="Please enter here your town hall email..."
                         IsVisible="False"
                         IsEnabled="False"/>
             </StackLayout>

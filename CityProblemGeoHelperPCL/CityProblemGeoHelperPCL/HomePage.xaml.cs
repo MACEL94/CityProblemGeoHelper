@@ -9,8 +9,8 @@ using Plugin.Geolocator.Abstractions;
 using Plugin.Geolocator;
 using System.Linq;
 using System.Threading.Tasks;
-using Xamarin.Essentials;
 using System.Text;
+using Plugin.Messaging;
 
 namespace CityProblemGeoHelperPCL
 {
@@ -28,10 +28,12 @@ namespace CityProblemGeoHelperPCL
                 Permission.Storage,
             };
 
+        private string _savedImageFilePath;
+
         /// <summary>
         /// Dizionario che stabilisce, attraverso il cap, 
         /// </summary>
-        private Dictionary<int, string> _dizionarioComuni =
+        private readonly Dictionary<int, string> _dizionarioComuni =
             new Dictionary<int, string>
             {
                 //    { 47841, "info@cattolica.net" }
@@ -40,7 +42,7 @@ namespace CityProblemGeoHelperPCL
         /// <summary>
         /// Map-Key necessaria alle app UWP per Bing.
         /// </summary>
-        private const string MY_MAP_KEY = "AiyBWk-XD4TvWYsi9WEXiZvpi5YyGTXDPIsdsd9u3r76T63OmZB3ADGCj2Zpklny";
+        private const string MY_MAP_KEY = "RJHqIE53Onrqons5CNOx~FrDr3XhjDTyEXEjng-CRoA~Aj69MhNManYUKxo6QcwZ0wmXBtyva0zwuHB04rFYAPf7qqGJ5cHb03RCDw1jIW8l";
 
         /// <summary>
         /// Tengo in memoria l'address salvato
@@ -77,19 +79,24 @@ namespace CityProblemGeoHelperPCL
                     }
                 }
 
-                // Inizializzo ora la fotocamera e controllo che tutto sia ok
-                // Se non esiste o non è disponibile sul device la fotocamera o il gps, esco.
+                // Inizializzo ora la fotocamera e controllo che tutto sia ok:
+                // se non esiste o non è disponibile sul device la fotocamera, il gps o il permesso di mandare
+                // email con allegati, esco.
                 if (!await CrossMedia.Current.Initialize().ConfigureAwait(false)
                     || !CrossMedia.Current.IsCameraAvailable
                     || !CrossMedia.Current.IsTakePhotoSupported
-                    || !CrossGeolocator.IsSupported)
+                    || !CrossGeolocator.IsSupported
+                    || !CrossMessaging.Current.EmailMessenger.CanSendEmailAttachments)
                 {
                     this.DisplayAlertOnMain("Error", "No camera or GPS available :(", "Ok");
                     return;
                 }
 
                 // Disabilito mentre faccio il necessario
-                // ButtonGetPhoto.IsEnabled = false;
+                Device.BeginInvokeOnMainThread(() =>
+                {
+                    ButtonGetPhoto.IsEnabled = false;
+                });
 
                 // Provo quindi a prendere la posizione corrente
                 // sicuramente ho i permessi perchè ho già controllato
@@ -100,7 +107,10 @@ namespace CityProblemGeoHelperPCL
 
                 // Prendo la posizione attuale, comprensiva di l'heading 
                 // Che è la direzione verso la quale l'utente è orientato, grazie all'accelerometro
-                _currentPosition = Task.Run(() => CrossGeolocator.Current.GetPositionAsync(TimeSpan.FromSeconds(2), null, true)).Result;
+                _currentPosition = Task.Run(() =>
+                {
+                    return CrossGeolocator.Current.GetPositionAsync(TimeSpan.FromSeconds(4), null, true);
+                }).Result;
 
                 if (_currentPosition == null)
                 {
@@ -109,8 +119,10 @@ namespace CityProblemGeoHelperPCL
                 }
 
                 // Presa la posizione, ottengo anche l'indirizzo
-                var possibleAddressesList = await locator.GetAddressesForPositionAsync(_currentPosition, MY_MAP_KEY)
-                    .ConfigureAwait(false);
+                IEnumerable<Address> possibleAddressesList = Task.Run(() =>
+                {
+                    return locator.GetAddressesForPositionAsync(_currentPosition, MY_MAP_KEY);
+                }).Result;
 
                 // Se non ho ottenuto alcun indirizzo
                 if (possibleAddressesList?.Any() != true)
@@ -123,38 +135,50 @@ namespace CityProblemGeoHelperPCL
                 _currentAddress = possibleAddressesList.FirstOrDefault();
 
                 // Altrimenti Faccio fare una foto all'utente
-                var file = await CrossMedia.Current.TakePhotoAsync(new StoreCameraMediaOptions
+                Task<MediaFile> file = null;
+                Device.BeginInvokeOnMainThread(() =>
                 {
-                    Directory = "CityProblemGeoHelperPhotos",
-                    SaveToAlbum = true,
-                    CompressionQuality = 70,
-                    PhotoSize = PhotoSize.MaxWidthHeight,
-                    // La fotocamera da utilizzare è chiaramente quella dietro
-                    DefaultCamera = CameraDevice.Rear,
-                    Location = new Plugin.Media.Abstractions.Location()
+                    file = CrossMedia.Current.TakePhotoAsync(new StoreCameraMediaOptions
                     {
-                        Latitude = _currentPosition.Latitude,
-                        Direction = _currentPosition.Heading,
-                        Altitude = _currentPosition.Altitude,
-                        HorizontalAccuracy = _currentPosition.AltitudeAccuracy,
-                        Longitude = _currentPosition.Longitude,
-                        Speed = _currentPosition.Speed,
-                        Timestamp = new DateTime(_currentPosition.Timestamp.UtcTicks, DateTimeKind.Utc),
-                    }
-                }).ConfigureAwait(false);
+                        Directory = "CityProblemGeoHelperPhotos",
+                        SaveToAlbum = true,
+                        CompressionQuality = 70,
+                        PhotoSize = PhotoSize.Medium,
+                        Location = new Location()
+                        {
+                            Latitude = _currentPosition.Latitude,
+                            Direction = _currentPosition.Heading,
+                            Altitude = _currentPosition.Altitude,
+                            HorizontalAccuracy = _currentPosition.AltitudeAccuracy,
+                            Longitude = _currentPosition.Longitude,
+                            Speed = _currentPosition.Speed,
+                            Timestamp = new DateTime(_currentPosition.Timestamp.UtcTicks, DateTimeKind.Utc),
+                        },
+                        AllowCropping = false,
+                        DefaultCamera = CameraDevice.Rear,
+                        Name = DateTime.Now.ToString("yyyy-MM-ddTHH-mm-dd"),
+                        SaveMetaData = true
+                    });
+                });
 
                 // Se non ci riesce esco
-                if (file == null)
+                if (file.Result == null)
                 {
-                    ButtonGetPhoto.IsEnabled = true;
+                    Device.BeginInvokeOnMainThread(() =>
+                    {
+                        ButtonGetPhoto.IsEnabled = true;
+                    });
                     return;
                 }
 
                 // Dico all'utente dove ho salvato l'immagine per chiarezza
-                this.DisplayAlertOnMain("File Location", file.Path, "OK");
+                this.DisplayAlertOnMain("File Location", file.Result.Path, "OK");
+
+                // Imposta il path globale che ci servirà per aggiungere l'attachment
+                _savedImageFilePath = file.Result.Path;
 
                 // Prende lo stream dal file
-                var stream = file.GetStream();
+                var stream = file.Result.GetStream();
 
                 // Prendo il main thread per impostare la nuova UI
                 Device.BeginInvokeOnMainThread(() =>
@@ -175,6 +199,10 @@ namespace CityProblemGeoHelperPCL
                     // Attivo l'Entry
                     EntryEmail.IsVisible = true;
                     EntryEmail.IsEnabled = true;
+
+                    // Attivo il bottone per poi mandare la mail
+                    ButtonSendEmail.IsEnabled = true;
+                    ButtonSendEmail.IsVisible = true;
 
                     // Se possibile calcolo quale sia la mail prendendola da quelle salvate
                     // Al momento ho solo quella di cattolica, se non trovo quella da usare la chiedo all'utente
@@ -201,7 +229,7 @@ namespace CityProblemGeoHelperPCL
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private async void ButtonSendEmail_Clicked(object sender, EventArgs e)
+        private void ButtonSendEmail_Clicked(object sender, EventArgs e)
         {
             // Se possibile calcolo quale sia la mail prendendola da quelle salvate, 
             // Al momento ho solo quella di cattolica, se non trovo quella da usare la chiedo all'utente
@@ -214,22 +242,41 @@ namespace CityProblemGeoHelperPCL
                 try
                 {
                     // Genero il testo
-                    var sb = new StringBuilder();
-
-                    sb.AppendLine("Hello there!")
+                    var sb = new StringBuilder().AppendLine("Hello there!")
                         .AppendLine("I found a problem, it's here:")
-                        .AppendLine(LabelAddress.Text);
+                        .AppendLine(LabelAddress.Text)
+                        .AppendLine()
+                        .AppendLine("Latitude:")
+                        .AppendLine(_currentPosition.Latitude.ToString())
+                        .AppendLine("Longitude:")
+                        .AppendLine(_currentPosition.Longitude.ToString())
+                        .AppendLine()
+                        .AppendLine("Google Maps Link:")
+                        .Append("https://www.google.com/maps/search/?api=1&query=")
+                        .Append(Utils.FormatCoordinate(_currentPosition.Latitude))
+                        .Append(",")
+                        .AppendLine(Utils.FormatCoordinate(_currentPosition.Longitude));
 
-                    var email = new EmailMessage
+                    // Se non sono nulli o non si è lasciato il placeholder, inserisco i commenti
+                    if (!String.IsNullOrWhiteSpace(EditorComments.Text) && !EditorComments.Text.Equals("Write here your comments..."))
                     {
-                        // Genero un numero identificativo così le email sono organizzate anche per il comune
-                        Subject = $"A problem has been found! {Guid.NewGuid()}",
-                        Body = sb.ToString(),
-                        BodyFormat = EmailBodyFormat.PlainText,
-                        To = new List<string> { EntryEmail.Text },
-                    };
+                        sb.AppendLine()
+                            .AppendLine("Comments:")
+                            .AppendLine(EditorComments.Text);
+                    }
 
-                    await Email.ComposeAsync(email);
+                    // Prendo il messenger, ho già controllato che l'utente abbia i permessi se siamo qui
+                    var emailMessenger = CrossMessaging.Current.EmailMessenger;
+
+                    // Creo la mail con l'allegato
+                    var email = new EmailMessageBuilder()
+                      .To(EntryEmail.Text)
+                      .Subject($"A problem has been found! {Guid.NewGuid()}")
+                      .Body(sb.ToString())
+                      .WithAttachment(_savedImageFilePath, "image/jpeg")
+                      .Build();
+
+                    emailMessenger.SendEmail(email);
                 }
                 catch (Exception ex)
                 {

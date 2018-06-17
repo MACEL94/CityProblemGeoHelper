@@ -63,6 +63,7 @@ namespace CityProblemGeoHelperPCL
         /// Permette di mostrare all'utente i messaggi dato che se si inizializza un thread 
         /// da un thread secondario si rischia che il secondario finisca prima che l'utente abbia visto il messaggio
         /// </summary>
+        /// <param name="page"></param>
         /// <param name="message"></param>
         /// <param name="title"></param>
         /// <param name="button"></param>
@@ -87,6 +88,16 @@ namespace CityProblemGeoHelperPCL
             Match match = regex.Match(text);
 
             return match.Success;
+        }
+
+        /// <summary>
+        /// Permette di esprimere la coordinata nel format richiesto da Google
+        /// </summary>
+        /// <param name="coordinate"></param>
+        /// <returns></returns>
+        internal static string FormatCoordinate(double coordinate)
+        {
+            return coordinate.ToString().Replace(',', '.');
         }
 
         #endregion Public Methods
