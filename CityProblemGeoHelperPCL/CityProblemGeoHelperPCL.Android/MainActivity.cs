@@ -8,6 +8,26 @@ namespace CityProblemGeoHelperPCL.Droid
     [Activity(Label = "CityProblemGeoHelper", Icon = "@mipmap/icon", Theme = "@style/MainTheme", MainLauncher = true, ConfigurationChanges = ConfigChanges.ScreenSize | ConfigChanges.Orientation)]
     public class MainActivity : FormsAppCompatActivity
     {
+        #region Public Methods
+
+        /// <summary>
+        /// Setup necessario come descritto dai vari plugin utilizzati nel progetto. Per info: https://github.com/jamesmontemagno/MediaPlugin
+        /// </summary>
+        /// <param name="requestCode">
+        /// </param>
+        /// <param name="permissions">
+        /// </param>
+        /// <param name="grantResults">
+        /// </param>
+        public override void OnRequestPermissionsResult(int requestCode, string[] permissions, Permission[] grantResults)
+        {
+            Plugin.Permissions.PermissionsImplementation.Current.OnRequestPermissionsResult(requestCode, permissions, grantResults);
+        }
+
+        #endregion Public Methods
+
+        #region Protected Methods
+
         protected override void OnCreate(Bundle savedInstanceState)
         {
             FormsAppCompatActivity.TabLayoutResource = global::CityProblemGeoHelperPCL.Droid.Resource.Layout.Tabbar;
@@ -20,17 +40,6 @@ namespace CityProblemGeoHelperPCL.Droid
             LoadApplication(new App());
         }
 
-        /// <summary>
-        /// Setup necessario come descritto dai vari plugin utilizzati nel progetto.
-        /// Per info: https://github.com/jamesmontemagno/MediaPlugin 
-        /// </summary>
-        /// <param name="requestCode"></param>
-        /// <param name="permissions"></param>
-        /// <param name="grantResults"></param>
-        public override void OnRequestPermissionsResult(int requestCode, string[] permissions, Permission[] grantResults)
-        {
-            Plugin.Permissions.PermissionsImplementation.Current.OnRequestPermissionsResult(requestCode, permissions, grantResults);
-        }
+        #endregion Protected Methods
     }
 }
-

@@ -49,34 +49,17 @@ namespace CityProblemGeoHelperPCL
             return true;
         }
 
-        /// <summary>
-        /// Loggo sempre seguendo lo stesso standard
-        /// </summary>
-        /// <param name="page"></param>
-        /// <param name="ex"></param>
-        internal static void DisplayAlertExceptionOnMain(this Page page, Exception ex)
-        {
-            Device.BeginInvokeOnMainThread(() => page.DisplayAlert("Uh oh, something went wrong", $"Please send a screen of this to the app admin. {ex}", "OK"));
-        }
+        #endregion Public Methods
 
-        /// <summary>
-        /// Permette di mostrare all'utente i messaggi dato che se si inizializza un thread 
-        /// da un thread secondario si rischia che il secondario finisca prima che l'utente abbia visto il messaggio
-        /// </summary>
-        /// <param name="page"></param>
-        /// <param name="message"></param>
-        /// <param name="title"></param>
-        /// <param name="button"></param>
-        internal static void DisplayAlertOnMain(this Page page, string message, string title, string button)
-        {
-            Device.BeginInvokeOnMainThread(() => page.DisplayAlert(message, title, button));
-        }
+        #region Internal Methods
 
         /// <summary>
         /// Controlla se l'email inserita è valida
         /// </summary>
-        /// <param name="text"></param>
-        /// <returns></returns>
+        /// <param name="text">
+        /// </param>
+        /// <returns>
+        /// </returns>
         internal static bool CheckValidEmail(string text)
         {
             if (text == null)
@@ -91,15 +74,46 @@ namespace CityProblemGeoHelperPCL
         }
 
         /// <summary>
+        /// Loggo sempre seguendo lo stesso standard
+        /// </summary>
+        /// <param name="page">
+        /// </param>
+        /// <param name="ex">
+        /// </param>
+        internal static void DisplayAlertExceptionOnMain(this Page page, Exception ex)
+        {
+            Device.BeginInvokeOnMainThread(() => page.DisplayAlert("Uh oh, something went wrong", $"Please send a screen of this to the app admin. {ex}", "OK"));
+        }
+
+        /// <summary>
+        /// Permette di mostrare all'utente i messaggi dato che se si inizializza un thread da un
+        /// thread secondario si rischia che il secondario finisca prima che l'utente abbia visto il messaggio
+        /// </summary>
+        /// <param name="page">
+        /// </param>
+        /// <param name="message">
+        /// </param>
+        /// <param name="title">
+        /// </param>
+        /// <param name="button">
+        /// </param>
+        internal static void DisplayAlertOnMain(this Page page, string message, string title, string button)
+        {
+            Device.BeginInvokeOnMainThread(() => page.DisplayAlert(message, title, button));
+        }
+
+        /// <summary>
         /// Permette di esprimere la coordinata nel format richiesto da Google
         /// </summary>
-        /// <param name="coordinate"></param>
-        /// <returns></returns>
+        /// <param name="coordinate">
+        /// </param>
+        /// <returns>
+        /// </returns>
         internal static string FormatCoordinate(double coordinate)
         {
             return coordinate.ToString().Replace(',', '.');
         }
 
-        #endregion Public Methods
+        #endregion Internal Methods
     }
 }

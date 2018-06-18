@@ -7,25 +7,25 @@
     <ContentPage Title="Try this app">
         <ScrollView>
             <StackLayout Spacing="10" Padding="10">
-                <Button x:Name="ButtonGetPhoto" 
-                        Text="Get a Photo with the current location" 
+                <Button x:Name="ButtonGetPhoto"
+                        Text="Get a Photo with the current location"
                         Clicked="ButtonGetPhoto_Clicked" />
-                <Image x:Name="ImageContent"/>
+                <Image x:Name="ImageContent" />
                 <Label x:Name="LabelAddress" />
-                <Editor x:Name="EditorComments" 
+                <Editor x:Name="EditorComments"
                         Text="Write here your comments..."
                         MaxLength="500"
                         IsVisible="False"
-                        IsEnabled="False"/>
+                        IsEnabled="False" />
                 <Entry x:Name="EntryEmail"
                        Placeholder="Please enter here your town hall email..."
                         IsVisible="False"
-                        IsEnabled="False"/>
-                <Button x:Name="ButtonSendEmail" 
-                        Text="Send this geolocalized photo to your town hall" 
-                        Clicked="ButtonSendEmail_Clicked"                      
+                        IsEnabled="False" />
+                <Button x:Name="ButtonSendEmail"
+                        Text="Send this geolocalized photo to your town hall"
+                        Clicked="ButtonSendEmail_Clicked"
                         IsVisible="False"
-                        IsEnabled="False"/>
+                        IsEnabled="False" />
             </StackLayout>
         </ScrollView>
     </ContentPage>
