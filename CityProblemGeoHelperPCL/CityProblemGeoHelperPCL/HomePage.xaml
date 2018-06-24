@@ -32,8 +32,10 @@
     <ContentPage Title="Help">
         <ScrollView>
             <StackLayout Spacing="10" Padding="10">
-                <Slider IsEnabled="False" IsVisible="True" />
-                <Label x:Name="Text" />
+                <!--Purtroppo devo mettere tutto su una sola riga, per far in modo che nello schermo dell'utente sia tutto formattato correttamente -->
+                <Label x:Name="Help"
+                       Text="Hello there!&#x0a;Don't feel lost, this app is simple to use!&#x0a;Just press the 'Get a Photo with the current location' to start.&#x0a;You will then be able to take a photo, being prompted for permissions, if you didn't already give them.&#x0a;Once you take the photo, that will be saved on your device(you will be told exactly where), and loaded in this app.&#x0a;You will also receive informations about where you just took it.&#x0a;Finally if the app isn't able to find your town hall's email it will ask you to insert it.&#x0a;You will then just need to press the 'Send this geolocalized photo to your town hall' button, and an email with the photo attached will be created for you."
+                       />
             </StackLayout>
         </ScrollView>
     </ContentPage>
